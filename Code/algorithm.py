@@ -1,7 +1,7 @@
 import pandas as pd
-from read_file import *
+from read_file_pero_mucho_mejor import *
 
-A, b, c = read_file(file='./Code/Inputs/34.1.txt', verbose=1)
+A, b, c, z, vb = read_file(file='./Code/Inputs/34.1.txt')
 print(len(A), len(A[0]), len(b), len(c))
 
 def simplex():

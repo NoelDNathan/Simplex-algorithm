@@ -10,17 +10,14 @@ def read_file(file, verbose=0):
     element = ""
     for line in input:
         if "=" in line:
-
-            pos = line.find("=") - 1
-        
+            pos = line.find("=") - 1        
             element = line[pos]
-
 
         if 'Columns' in line:
             size = line.split()[3]
             size_matrix[element] = int(size)
             continue
-        
+
         text += line
 
     if verbose: print(size_matrix)
