@@ -55,7 +55,3 @@ def read_section(section):
         section = [float(i) for i in section]
     
     return section
-
-
-
-print(read_file('./Code/Inputs/34.1.txt'))
