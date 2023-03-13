@@ -1,9 +1,9 @@
 import pandas as pd
-import numpy as np
+from read_file import *
 
-c = [8, -5, 6, 77, -77, 96, -74, -37, 91, -100, -10, -59, 28, 85, 0, 0, 0, 0]
-c = np.array(c)
-c.where(0)
+A, b, c = read_file(file='./Code/Inputs/34.1.txt', verbose=1)
+print(len(A), len(A[0]), len(b), len(c))
+
 def simplex():
     
     # costes reducidos
