@@ -36,7 +36,7 @@ class Problem():
                 print("Problema no acotado")
                 break
 
-            theta, _p, p = self.calculate_theta_and_p(i_B, X_B, db)
+            theta, _p = self.calculate_theta_and_p(i_B, X_B, db)
 
             self.swap(i_B, i_N, _q, _p)
             B, An, z, cb, cn =  self.actualize_variables( A, i_N, i_B, X_B, z, theta, db, rn, _q, _p)
@@ -93,7 +93,7 @@ class Problem():
                         i_p = i
 
         print(f"Theta: {theta} and output variable: {p}")
-        return theta, i_p, p
+        return theta, i_p
     
     def swap(self,i_B, i_N, _q, _p):
         i_N[_q], i_B[_p] = i_B[_p], i_N[_q]
