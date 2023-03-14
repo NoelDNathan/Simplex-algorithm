@@ -15,7 +15,7 @@ class Problem():
     def fase_1(self):
         pass
     
-    def fase_2(self):
+    def fase_2(self, A, c, i_B, i_N, X_B, z):
         cb = c[i_B]
         cn = c[i_N]
         An = A.take(i_N, axis=1) # Me da toc An y B
