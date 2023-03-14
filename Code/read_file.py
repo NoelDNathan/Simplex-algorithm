@@ -45,6 +45,7 @@ def read_file(file, verbose=0):
 
             previous = text[i - 1]
             isA = False
+            
             if previous == 'c':
                 selected_matrix = section_c
             elif previous == 'A':
