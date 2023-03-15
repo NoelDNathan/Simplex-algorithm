@@ -2,8 +2,8 @@ import numpy as np
 from read_file_pero_mucho_mejor import *
 
 class Problem():
-    def __init__(self, A, b, c, B, N):
-        self.A = A.T
+    def __init__(self, A, b, c):
+        self.A = A
         self.b = b
         self.c = c 
         
@@ -11,31 +11,26 @@ class Problem():
         print(f'A = {self.A}')
         print(f'b = {self.b}')
         print(f'c = {self.c}')
-        print(f'Actual Base: {self.i_B}')
-        print(f'Actual Solution: {self.X_B}')
-        print(f'Actual Min: {self.z}')
         return ''
         
     def solve(self):
-        self.fase_1()
-    
-        solved = False
-        while not solved:
-            print("Helloooooo")
-            solved = self.fase_2()
-            
+        pass
     
     def fase_1(self):
         pass
     
     def fase_2(self, i_B, i_N, X_B, z):
+        print(self)
         cb = self.c[i_B]
         cn = self.c[i_N]
-        An = self.A.take(i_N, axis=1) # Me da toc An y B
+        An = self.A.take(i_N, axis=1)
         B = self.A.take(i_B, axis=1)
         inv_B = np.linalg.inv(B)
 
+        iteration = 1
         while True:
+            print(f'-------------- Iteration: {iteration} --------------\n')
+            
             rn, stop = self.reduced_costs(cn, cb, inv_B, An)
 
             if stop:
@@ -50,21 +45,18 @@ class Problem():
 
             theta, _p = self.calculate_theta_and_p(i_B, X_B, db)
 
-            self.swap(i_B, i_N, _q, _p)
+            self.swap_Victor(i_B, i_N, _q, _p)
             B, An, z, cb, cn =  self.actualize_variables(i_N, i_B, X_B, z, theta, db, rn, _q, _p)
             inv_B = self.actualize_inverse(B)
-    
-    def actualize_inverse(self, B):
-        print(f"Old inverse: {B}")
-        inv_B = np.linalg.inv(B)
-        print(f"New inverse: {inv_B}")
-        return inv_B
+            
+            print(f'-------------- Iteration: {iteration} --------------\n')
+            iteration += 1
     
     def reduced_costs(self, cn, cb, inv_B, An):
         rn = cn - cb.dot(inv_B).dot(An)
         print(f"Reduced cost: {rn}")
         if all(rn >= 0):
-            print("Optim!!!")
+            print("\nOptim!!!")
             return rn, True
         return rn, False
     
@@ -74,7 +66,7 @@ class Problem():
                 q = i_N[_q]
                 print(f"Input variable: {q}")
                 return _q, q
-            
+
     def calculate_db(self, inv_B, q):
         db = - inv_B.dot(self.A.take(q, axis=1))
         print(f"Db: {db}")
@@ -108,30 +100,37 @@ class Problem():
         i_N.sort()
         print(f"Indexs. \n i_B: {i_B} \n i_N: {i_N} \n")
         
-    def swap(self):
-        into = self.i_N[q]
-        outof = self.i_B[p]
-        self.i_B[p] = into
-        
-        del self.i_N[q]
-        for i, x in enumerate(self.i_N):
-            print(i, x)
+    def swap_Victor(self, i_B, i_N, _q, _p):
+        into = i_N[_q]
+        outof = i_B[_p]
+        i_B[_p] = into
+        del i_N[_q]
+
+        for i, x in enumerate(i_N):
             if x > outof:
-                self.i_N.insert(i, outof)
+                i_N.insert(i, outof)
                 break
+            
+        print(f"\nSwap input and output \n i_B: {i_B} \n i_N: {i_N} \n")
 
     def actualize_variables(self, i_N, i_B, X_B, z,theta, db, rn, q, p):
         X_B = X_B + theta * db
         X_B[p] = theta
         B = self.A.take(i_B, axis=1)
         An = self.A.take(i_N, axis=1)
-        cn = c[i_N]
-        cb = c[i_B]
+        cn = self.c[i_N]
+        cb = self.c[i_B]
 
         z += theta * rn[q]
 
         print(f"Actualize variables. \n XB: {X_B} \n B: {B} \n An: {An} \n z: {z} \n")
         return B, An, z, cb, cn
+
+    def actualize_inverse(self, B):
+        print(f"Old inverse: {B}")
+        inv_B = np.linalg.inv(B)
+        print(f"New inverse: {inv_B}\n")
+        return inv_B
 
 
 A = np.array([[2, 1, 1, 0], [1, 1, 0, 1]])
@@ -147,7 +146,6 @@ inv_B = np.linalg.inv(B)
 
 X_B = inv_B.dot(b)
 
-print(X_B)
 z = -3
 
-P = Problem().fase_2(A, c, i_B, i_N, X_B, z)
+P = Problem(A, b, c).fase_2(i_B, i_N, X_B, z)
