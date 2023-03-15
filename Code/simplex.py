@@ -2,9 +2,10 @@ import numpy as np
 from read_file_pero_mucho_mejor import *
 
 class Problem():
-    def __init__(self) -> None:
-        pass
- 
+    def __init__(self, A, b, c):
+        self.A = A
+        self.b = b
+        self.c = c 
         
     def __repr__(self):
         return f'A = {self.A}\nb = {self.b}\nc={self.c}'
@@ -15,22 +16,21 @@ class Problem():
     def fase_1(self):
         pass
     
-    def fase_2(self, A, c, i_B, i_N, X_B, z):
-        cb = c[i_B]
-        cn = c[i_N]
-        An = A.take(i_N, axis=1) # Me da toc An y B
-        B = A.take(i_B, axis=1)
+    def fase_2(self, i_B, i_N, X_B, z):
+        cb = self.c[i_B]
+        cn = self.c[i_N]
+        An = self.A.take(i_N, axis=1) # Me da toc An y B
+        B = self.A.take(i_B, axis=1)
         inv_B = np.linalg.inv(B)
 
         while True:
-
             rn, stop = self.reduced_costs(cn, cb, inv_B, An)
 
             if stop:
                 break
 
             _q, q = self.calculate_input_variable(i_N, rn)
-            db = self.calculate_db(A, inv_B, q)
+            db = self.calculate_db(inv_B, q)
 
             if all(db >= 0):
                 print("Problema no acotado")
@@ -39,12 +39,9 @@ class Problem():
             theta, _p = self.calculate_theta_and_p(i_B, X_B, db)
 
             self.swap(i_B, i_N, _q, _p)
-            B, An, z, cb, cn =  self.actualize_variables( A, i_N, i_B, X_B, z, theta, db, rn, _q, _p)
+            B, An, z, cb, cn =  self.actualize_variables(i_N, i_B, X_B, z, theta, db, rn, _q, _p)
             inv_B = self.actualize_inverse(B)
-
-
-        
-        
+    
     def actualize_inverse(self, B):
         print(f"Old inverse: {B}")
         inv_B = np.linalg.inv(B)
@@ -52,7 +49,6 @@ class Problem():
         return inv_B
     
     def reduced_costs(self, cn, cb, inv_B, An):
-        
         rn = cn - cb.dot(inv_B).dot(An)
         print(f"Reduced cost: {rn}")
         if all(rn >= 0):
@@ -67,8 +63,8 @@ class Problem():
                 print(f"Input variable: {q}")
                 return _q, q
             
-    def calculate_db(self,A, inv_B, q):
-        db = - inv_B.dot(A.take(q, axis=1))
+    def calculate_db(self, inv_B, q):
+        db = - inv_B.dot(self.A.take(q, axis=1))
         print(f"Db: {db}")
         return db
         
@@ -100,11 +96,11 @@ class Problem():
         i_N.sort()
         print(f"Indexs. \n i_B: {i_B} \n i_N: {i_N} \n")
 
-    def actualize_variables(self, A, i_N, i_B, X_B, z,theta, db, rn, q, p):
+    def actualize_variables(self, i_N, i_B, X_B, z,theta, db, rn, q, p):
         X_B = X_B + theta * db
         X_B[p] = theta
-        B = A.take(i_B, axis=1)
-        An = A.take(i_N, axis=1)
+        B = self.A.take(i_B, axis=1)
+        An = self.A.take(i_N, axis=1)
         cn = c[i_N]
         cb = c[i_B]
 
@@ -113,13 +109,6 @@ class Problem():
         print(f"Actualize variables. \n XB: {X_B} \n B: {B} \n An: {An} \n z: {z} \n")
         return B, An, z, cb, cn
 
-
-
-
-
-
-
-                
 
 A = np.array([[2, 1, 1, 0], [1, 1, 0, 1]])
 b = np.array([3, 2])
