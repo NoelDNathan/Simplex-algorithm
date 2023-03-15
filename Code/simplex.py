@@ -2,16 +2,28 @@ import numpy as np
 from read_file_pero_mucho_mejor import *
 
 class Problem():
-    def __init__(self, A, b, c):
-        self.A = A
+    def __init__(self, A, b, c, B, N):
+        self.A = A.T
         self.b = b
         self.c = c 
         
     def __repr__(self):
-        return f'A = {self.A}\nb = {self.b}\nc={self.c}'
+        print(f'A = {self.A}')
+        print(f'b = {self.b}')
+        print(f'c = {self.c}')
+        print(f'Actual Base: {self.i_B}')
+        print(f'Actual Solution: {self.X_B}')
+        print(f'Actual Min: {self.z}')
+        return ''
         
     def solve(self):
-        pass
+        self.fase_1()
+    
+        solved = False
+        while not solved:
+            print("Helloooooo")
+            solved = self.fase_2()
+            
     
     def fase_1(self):
         pass
@@ -95,6 +107,18 @@ class Problem():
         i_N[_q], i_B[_p] = i_B[_p], i_N[_q]
         i_N.sort()
         print(f"Indexs. \n i_B: {i_B} \n i_N: {i_N} \n")
+        
+    def swap(self):
+        into = self.i_N[q]
+        outof = self.i_B[p]
+        self.i_B[p] = into
+        
+        del self.i_N[q]
+        for i, x in enumerate(self.i_N):
+            print(i, x)
+            if x > outof:
+                self.i_N.insert(i, outof)
+                break
 
     def actualize_variables(self, i_N, i_B, X_B, z,theta, db, rn, q, p):
         X_B = X_B + theta * db
