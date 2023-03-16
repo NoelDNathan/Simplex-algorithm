@@ -17,9 +17,19 @@ class Problem():
         pass
     
     def fase_1(self):
+        # Si z = 0
+        # Si quedan variables artificiales
+        # La cambiamos por una variable de la base
+        # como son dos 0, no hay problema
+        #Una solución es basica si una B es invertible (no es condición suficiente)
         pass
     
     def fase_2(self, i_B, i_N, X_B, z):
+        # No puede haber z < 0
+        # No puede haber variables negativas
+        # z = 0, hay degeneración -> implementar la regla de Bland
+        # Ojo no acotación
+    
         print(self)
         cb = self.c[i_B]
         cn = self.c[i_N]
@@ -43,11 +53,13 @@ class Problem():
                 print("Problema no acotado")
                 break
 
-            theta, _p = self.calculate_theta_and_p(i_B, X_B, db)
+            theta, _p, p = self.calculate_theta_and_p(i_B, X_B, db)
 
             self.swap_Victor(i_B, i_N, _q, _p)
             B, An, z, cb, cn =  self.actualize_variables(i_N, i_B, X_B, z, theta, db, rn, _q, _p)
+            ninv_B = self.actualize_inverse2(inv_B, db, _p)
             inv_B = self.actualize_inverse(B)
+            print(f"inversa: \n {inv_B} \n new inv:\n {ninv_B}")
             
             print(f'-------------- Iteration: {iteration} --------------\n')
             iteration += 1
@@ -93,7 +105,7 @@ class Problem():
                         i_p = i
 
         print(f"Theta: {theta} and output variable: {p}")
-        return theta, i_p
+        return theta, i_p, p
     
     def swap(self,i_B, i_N, _q, _p):
         i_N[_q], i_B[_p] = i_B[_p], i_N[_q]
@@ -127,10 +139,17 @@ class Problem():
         return B, An, z, cb, cn
 
     def actualize_inverse(self, B):
-        print(f"Old inverse: {B}")
         inv_B = np.linalg.inv(B)
-        print(f"New inverse: {inv_B}\n")
         return inv_B
+    
+    def actualize_inverse2(self, inv_B, db, p):
+        Np = - db / db[p]
+        Np[p] = - 1 / db[p]
+        E = np.eye(len(inv_B))
+        E[:, p] = Np
+        new_inv_b = E.dot(inv_B)
+        return new_inv_b
+        
 
 
 A = np.array([[2, 1, 1, 0], [1, 1, 0, 1]])
