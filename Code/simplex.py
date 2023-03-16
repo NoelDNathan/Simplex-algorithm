@@ -7,6 +7,9 @@ class Problem():
         self.b = b
         self.c = c 
         
+        self.m = len(self.A)
+        self.n = len(self.c)
+        
     def __repr__(self):
         print(f'A = {self.A}')
         print(f'b = {self.b}')
@@ -17,12 +20,20 @@ class Problem():
         pass
     
     def fase_1(self):
-        # Si z = 0
-        # Si quedan variables artificiales
+        # Si z = 0 y quedan variables artificiales
         # La cambiamos por una variable de la base
         # como son dos 0, no hay problema
-        #Una solución es basica si una B es invertible (no es condición suficiente)
-        pass
+        # Una solución es basica si una B es invertible (no es condición suficiente)
+        
+        new_C = np.asarray([0 for i in range(self.n)] + [1 for i in range(self.m)])
+        
+        I = np.identity(self.m)
+        new_A = np.concatenate((self.A.copy(), I), axis=1)
+        
+        i_B = [self.n + i for i in range(self.m)]
+        i_N = [i for i in range(self.n)]
+        X_B = self.b
+        z = sum(X_B)
     
     def fase_2(self, i_B, i_N, X_B, z):
         # No puede haber z < 0
@@ -167,4 +178,5 @@ X_B = inv_B.dot(b)
 
 z = -3
 
-P = Problem(A, b, c).fase_2(i_B, i_N, X_B, z)
+P = Problem(A, b, c).fase_1()
+# P = Problem(A, b, c).fase_2(i_B, i_N, X_B, z)
