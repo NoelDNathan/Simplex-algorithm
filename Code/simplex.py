@@ -1,6 +1,15 @@
 import numpy as np
 from read_file_pero_mucho_mejor import *
 
+
+def print_matrix(matrix):
+    s = [[str(e) for e in row] for row in matrix.tolist()]
+    lens = [max(map(len, col)) for col in zip(*s)]
+    fmt = '\t'.join('{{:{}}}'.format(x) for x in lens)
+    table = [fmt.format(*row) for row in s]
+    return '\n'.join(table)
+
+
 class Problem():
     def __init__(self, A, b, c):
         self.A = A
@@ -11,13 +20,17 @@ class Problem():
         self.n = len(self.c)
         
     def __repr__(self):
-        print(f'A = {self.A}')
+        print(f'A = \n{print_matrix(self.A)}')
         print(f'b = {self.b}')
         print(f'c = {self.c}')
         return ''
         
     def solve(self):
-        pass
+        print("! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! FASE 1 ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! \n")
+        i_B, i_N, X_B, z = self.fase_1()
+        print("! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! FASE 2 ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! \n")
+        i_B, i_N, X_B, z = self.fase_2(i_B, i_N, X_B, z)
+        return i_B, i_N, X_B, z
     
     def fase_1(self):
         # Si z = 0 y quedan variables artificiales
@@ -25,15 +38,27 @@ class Problem():
         # como son dos 0, no hay problema
         # Una solución es basica si una B es invertible (no es condición suficiente)
         
-        new_C = np.asarray([0 for i in range(self.n)] + [1 for i in range(self.m)])
+        copy_A = self.A.copy()
+        copy_c = self.c.copy()
+        
+        new_c = np.array([0 for i in range(self.n)] + [1 for i in range(self.m)])
+        self.c = new_c
         
         I = np.identity(self.m)
         new_A = np.concatenate((self.A.copy(), I), axis=1)
+        self.A = new_A
         
         i_B = [self.n + i for i in range(self.m)]
         i_N = [i for i in range(self.n)]
         X_B = self.b
         z = sum(X_B)
+        
+        i_B, i_N, X_B, z = self.fase_2(i_B, i_N, X_B, z) 
+    
+        self.A = copy_A
+        self.c = copy_c
+        
+        return i_B, i_N, X_B, z
     
     def fase_2(self, i_B, i_N, X_B, z):
         # No puede haber z < 0
@@ -70,10 +95,12 @@ class Problem():
             B, An, z, cb, cn =  self.actualize_variables(i_N, i_B, X_B, z, theta, db, rn, _q, _p)
             ninv_B = self.actualize_inverse2(inv_B, db, _p)
             inv_B = self.actualize_inverse(B)
-            print(f"inversa: \n {inv_B} \n new inv:\n {ninv_B}")
+            print(f"inversa: \n {print_matrix(inv_B)} \n new inv:\n {print_matrix(ninv_B)}")
             
             print(f'-------------- Iteration: {iteration} --------------\n')
             iteration += 1
+            
+        return i_B, i_N, X_B, z
     
     def reduced_costs(self, cn, cb, inv_B, An):
         rn = cn - cb.dot(inv_B).dot(An)
@@ -118,11 +145,6 @@ class Problem():
         print(f"Theta: {theta} and output variable: {p}")
         return theta, i_p, p
     
-    def swap(self,i_B, i_N, _q, _p):
-        i_N[_q], i_B[_p] = i_B[_p], i_N[_q]
-        i_N.sort()
-        print(f"Indexs. \n i_B: {i_B} \n i_N: {i_N} \n")
-        
     def swap_Victor(self, i_B, i_N, _q, _p):
         into = i_N[_q]
         outof = i_B[_p]
@@ -146,7 +168,7 @@ class Problem():
 
         z += theta * rn[q]
 
-        print(f"Actualize variables. \n XB: {X_B} \n B: {B} \n An: {An} \n z: {z} \n")
+        print(f"Actualize variables. \n XB: {X_B} \n B: {print_matrix(B)} \n An: {print_matrix(An)} \n z: {z} \n")
         return B, An, z, cb, cn
 
     def actualize_inverse(self, B):
@@ -160,23 +182,16 @@ class Problem():
         E[:, p] = Np
         new_inv_b = E.dot(inv_B)
         return new_inv_b
-        
 
 
 A = np.array([[2, 1, 1, 0], [1, 1, 0, 1]])
 b = np.array([3, 2])
 c = np.array([-1, -2, 0, 0])
 
-i_B = [0, 1]
-i_N = [2, 3]
+# A, b, c, z, vb = read_file(file='./Code/Inputs/34.1.txt')
+# A = np.array(A)
+# b = np.array(b)
+# c = np.array(c)
 
-B = A.take(i_B, axis=1)
-
-inv_B = np.linalg.inv(B)
-
-X_B = inv_B.dot(b)
-
-z = -3
-
-P = Problem(A, b, c).fase_1()
+P = Problem(A, b, c).solve()
 # P = Problem(A, b, c).fase_2(i_B, i_N, X_B, z)
