@@ -57,6 +57,7 @@ class Problem():
 
         self.A = copy_A
         self.c = copy_c
+        z = self.c[i_B].dot(x_B)
         
         return i_B, i_N, x_B, z
     
@@ -90,7 +91,7 @@ class Problem():
             theta, _p, p = self.theta_and_p(i_B, x_B, db, verbose)
 
             self.swap(i_B, i_N, _q, _p, verbose)
-            B, An, z, cb, cn = self.actualize_variables(i_N, i_B, x_B, z, theta, db, rn, _q, _p, verbose)
+            B, An, z, cb, cn, x_B = self.actualize_variables(i_N, i_B, x_B, z, theta, db, rn, _q, _p, verbose)
             inv_B = self.actualize_inverse_better(inv_B, db, _p) if inverse \
                     else self.actualize_inverse(B)
             iteration += 1
@@ -168,7 +169,7 @@ class Problem():
 
         if verbose: print(f'X_B: {self.__repr_list(x_B)} \nZ = {z}\n\n')
         if verbose == 2: print(f'B: \n{self.__repr_matrix(B)} \nAn: \n{self.__repr_matrix(An)}\n\n')
-        return B, An, z, cb, cn
+        return B, An, z, cb, cn, x_B
 
     def actualize_inverse(self, B):
         inv_B = np.linalg.inv(B)
