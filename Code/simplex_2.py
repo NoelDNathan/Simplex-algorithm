@@ -18,7 +18,7 @@ class Problem():
         n = f'Variables: {self.n}'
         m = f'Restrictions: {self.m}'
 
-        return A + '\n\n' + b + '\n\n' + c + '\n\n' + n + '\n\n' + m
+        return A + '\n\n' + b + '\n\n' + c + '\n\n' + n + '\n\n' + m + '\n\n'
 
     def __repr_matrix(self, matrix) -> str:
         s = [[str(round(e, 2)) for e in row] for row in matrix.tolist()]
@@ -34,10 +34,10 @@ class Problem():
         return string
     
     def solve(self, verbose=0):
-        if verbose: print(' F A S E: 1')
+        if verbose: print(' - - - - - - - - - - - - - - F A S E: 1 - - - - - - - - - - - - - - \n')
         i_B, i_N, x_B, z = self.fase_1(verbose)
 
-        if verbose: print(' F A S E: 2')
+        if verbose: print(' - - - - - - - - - - - - - - F A S E: 2 - - - - - - - - - - - - - - \n')
         i_B, i_N, x_B, z = self.fase_2(i_B, i_N, x_B, z, verbose)
 
         return i_B, i_N, x_B, z
@@ -69,9 +69,13 @@ class Problem():
         B = self.A.take(i_B, axis=1)
         inv_B = np.linalg.inv(B)
 
+        if verbose: 
+            print(f'Base inicial: {self.__repr_list(i_B)}')
+            print(f'Z inicial: {z} \n\n')
+
         iteration = 1
         while True:
-            if verbose: print(f' - {iteration} Iteration')
+            if verbose: print(f' - - - - - - - {iteration} Iteration - - - - - - - \n')
 
             rn, stop = self.reduced_costs(cn, cb, inv_B, An, verbose)
             if stop: break
@@ -89,6 +93,7 @@ class Problem():
             B, An, z, cb, cn = self.actualize_variables(i_N, i_B, x_B, z, theta, db, rn, _q, _p, verbose)
             inv_B = self.actualize_inverse_better(inv_B, db, _p) if inverse \
                     else self.actualize_inverse(B)
+            iteration += 1
 
         return i_B, i_N, x_B, z
 
@@ -161,8 +166,8 @@ class Problem():
 
         z += theta * rn[q]
 
-        if verbose: print(f'X_B: {self.__repr_list(x_B)} \nZ = {z}')
-        if verbose == 2: print(f'B: \n{self.__repr_matrix(B)} \nAn: \n{self.__repr_matrix(An)}')
+        if verbose: print(f'X_B: {self.__repr_list(x_B)} \nZ = {z}\n\n')
+        if verbose == 2: print(f'B: \n{self.__repr_matrix(B)} \nAn: \n{self.__repr_matrix(An)}\n\n')
         return B, An, z, cb, cn
 
     def actualize_inverse(self, B):
