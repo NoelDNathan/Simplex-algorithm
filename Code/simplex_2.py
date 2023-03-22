@@ -35,10 +35,10 @@ class Problem():
             string += str(round(i, 2)) + '  '
         return string
     
-    def __print_iter(self):
+    def _print_iter(self):
         string = f''
         for key, item in self.iteration_info.items():
-            string += f'{key}: {item} '
+            string += f'{key}: {item}  '
         return string
     
     def solve(self, verbose=0):
@@ -78,7 +78,7 @@ class Problem():
         B = self.A.take(i_B, axis=1)
         inv_B = np.linalg.inv(B)
 
-        if verbose: 
+        if verbose == 2: 
             print(f'Base inicial: {self.__repr_list(i_B)}')
             print(f'Z inicial: {z} \n\n')
 
@@ -88,7 +88,13 @@ class Problem():
             if verbose == 2: print(f' - Iteration {iteration}')
 
             rn, stop = self.reduced_costs(cn, cb, inv_B, An, verbose)
-            if stop: break
+            if stop: 
+                print('Optim solution:')
+                print(f'vb = {self.__repr_list(i_B)}')
+                print(f'xb = {self.__repr_list(x_B)}')
+                print(f'z = {z}')
+                print(f'r = {self.__repr_list(rn)}')
+                break
 
             _q, q = self.input_variable(i_N, rn, verbose)
             db = self.calculate_db(inv_B, q, verbose)
@@ -103,9 +109,9 @@ class Problem():
             B, An, z, cb, cn, x_B = self.actualize_variables(i_N, i_B, x_B, z, theta, db, rn, _q, _p, verbose)
             inv_B = self.actualize_inverse_better(inv_B, db, _p) if inverse \
                     else self.actualize_inverse(B)
-                        iteration += 1
 
-            if verbose == 1: print(self.__print_iter())
+            if verbose == 1: print(self._print_iter())
+            iteration += 1
 
         return i_B, i_N, x_B, z
 
@@ -205,4 +211,4 @@ c = [-1, -2, 0, 0]
 A, b, c, z, vb = read_file(file='./Code/Inputs/34.1.txt')
 
 P = Problem(A, b, c)
-P.solve(verbose=2)
+P.solve(verbose=1)
