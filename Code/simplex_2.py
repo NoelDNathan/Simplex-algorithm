@@ -11,6 +11,8 @@ class Problem():
         self.n = len(self.c)
         self.m = len(self.A)
 
+        self.iteration_info = {}
+
     def __repr__(self) -> str:
         A = f'A: \n{self.__repr_matrix(self.A)}'
         b = f'b: \n{self.__repr_list(self.b)}'
@@ -31,6 +33,12 @@ class Problem():
         string = ''
         for i in array:
             string += str(round(i, 2)) + '  '
+        return string
+    
+    def __print_iter(self):
+        string = f''
+        for key, item in self.iteration_info.items():
+            string += f'{key}: {item} '
         return string
     
     def solve(self, verbose=0):
@@ -62,7 +70,7 @@ class Problem():
         return i_B, i_N, x_B, z
     
     def fase_2(self, i_B, i_N, x_B, z, verbose=0, inverse=False):
-        if verbose: print(self)
+        if verbose == 2: print(self)
 
         cb = self.c[i_B]
         cn = self.c[i_N]
@@ -76,7 +84,8 @@ class Problem():
 
         iteration = 1
         while True:
-            if verbose: print(f' - - - - - - - {iteration} Iteration - - - - - - - \n')
+            self.iteration_info['Iteration'] = iteration
+            if verbose == 2: print(f' - Iteration {iteration}')
 
             rn, stop = self.reduced_costs(cn, cb, inv_B, An, verbose)
             if stop: break
@@ -94,16 +103,18 @@ class Problem():
             B, An, z, cb, cn, x_B = self.actualize_variables(i_N, i_B, x_B, z, theta, db, rn, _q, _p, verbose)
             inv_B = self.actualize_inverse_better(inv_B, db, _p) if inverse \
                     else self.actualize_inverse(B)
-            iteration += 1
+                        iteration += 1
+
+            if verbose == 1: print(self.__print_iter())
 
         return i_B, i_N, x_B, z
 
     def reduced_costs(self, cn, cb, inv_B, An, verbose=0):
         rn = cn - cb.dot(inv_B).dot(An)
-        if verbose: print(f"Reduced cost: {self.__repr_list(rn)}")
+        if verbose == 2: print(f"Reduced cost: {self.__repr_list(rn)}")
 
         if all(rn >= 0):
-            if verbose: print("\nOptim!!!")
+            if verbose: print("\nOptim!!!\n\n")
             return rn, True
         
         return rn, False
@@ -112,12 +123,13 @@ class Problem():
         for _q, x in enumerate(rn):
             if x < 0:
                 q = i_N[_q]
-                if verbose: print(f"q: {_q} Input variable: {q}")
+                self.iteration_info['q'] = q
+                if verbose == 2: print(f"q: {_q} Input variable: {q}")
                 return _q, q
             
     def calculate_db(self, inv_B, q, verbose=0):
         db = - inv_B.dot(self.A.take(q, axis=1))
-        if verbose: print(f"Db: {self.__repr_list(db)}")
+        if verbose == 2: print(f"Db: {self.__repr_list(db)}")
         return db
     
     def theta_and_p(self, i_B, x_B, db, verbose=0):
@@ -140,7 +152,9 @@ class Problem():
                         p = new_p
                         i_p = i
 
-        if verbose: print(f"Theta: {theta} and output variable: {p}")
+        self.iteration_info['p'] = p
+        self.iteration_info['Theta'] = theta
+        if verbose == 2: print(f"Theta: {theta} and output variable: {p}")
         return theta, i_p, p
 
     def swap(self, i_B, i_N, _q, _p, verbose=0):
@@ -154,7 +168,7 @@ class Problem():
                 i_N.insert(i, outof)
                 break
             
-        if verbose: 
+        if verbose == 2: 
             print(f"\nSwap input and output \n i_B: {self.__repr_list(i_B)} \n i_N: {self.__repr_list(i_N)} \n")
 
     def actualize_variables(self, i_N, i_B, x_B, z,theta, db, rn, q, p, verbose=0):
@@ -167,8 +181,9 @@ class Problem():
 
         z += theta * rn[q]
 
-        if verbose: print(f'X_B: {self.__repr_list(x_B)} \nZ = {z}\n\n')
-        if verbose == 2: print(f'B: \n{self.__repr_matrix(B)} \nAn: \n{self.__repr_matrix(An)}\n\n')
+        self.iteration_info['z'] = z
+        if verbose== 2: print(f'X_B: {self.__repr_list(x_B)} \nZ = {z}\n\n')
+        if verbose == 3: print(f'B: \n{self.__repr_matrix(B)} \nAn: \n{self.__repr_matrix(An)}\n\n')
         return B, An, z, cb, cn, x_B
 
     def actualize_inverse(self, B):
@@ -190,4 +205,4 @@ c = [-1, -2, 0, 0]
 A, b, c, z, vb = read_file(file='./Code/Inputs/34.1.txt')
 
 P = Problem(A, b, c)
-P.solve(verbose=1)
+P.solve(verbose=2)
