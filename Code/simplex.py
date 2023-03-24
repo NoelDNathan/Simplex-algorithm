@@ -1,6 +1,7 @@
 import numpy as np
 from read_file import *
 
+NO_ACOTADO = -9999999
 
 class Problem():
     def __init__(self, A, b, c) -> None:
@@ -51,6 +52,9 @@ class Problem():
         
         i_B, i_N, x_B, z = self.fase_1(verbose)
 
+        if  z == NO_ACOTADO:
+            return None
+                                   
         if verbose: self.print('\n - - - - - - - - - - - - - - F A S E: 2 - - - - - - - - - - - - - - - - - - - - - \n')
         
         i_B, i_N, x_B, z = self.fase_2(i_B, i_N, x_B, z, verbose)
@@ -69,7 +73,11 @@ class Problem():
         z = sum(x_B)
 
         i_B, i_N, x_B, z = self.fase_2(i_B, i_N, x_B, z, verbose)
-
+        
+        if round(z, 10) > 0:
+            if verbose: self.print('Problema no factible')
+            return i_B, i_N, x_B, NO_ACOTADO
+        
         self.A = copy_A
         self.c = copy_c
         z = self.c[i_B].dot(x_B)
@@ -217,7 +225,7 @@ c = [-1, -2, 0, 0]
 
 
 input_folder = './Code/Inputs/'
-problem_name = '34.4'
+problem_name = '34.3'
 filename = input_folder + problem_name + '.inp'
 
 A, b, c = read_file(file=filename)
