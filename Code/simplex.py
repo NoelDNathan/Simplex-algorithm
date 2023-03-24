@@ -15,7 +15,7 @@ class Problem():
         self.iteration_info = {}
         self.output = ""
 
-    def print(self, text):
+    def print(self, text) -> None:
         self.output += text + '\n'
         print(text)
 
@@ -41,7 +41,7 @@ class Problem():
             string += str(round(i, 2)) + '  '
         return string
     
-    def _print_iter(self):
+    def _print_iter(self) -> str:
         string = f''
         for key, item in self.iteration_info.items():
             string += f'{key}: {item}  '
@@ -218,10 +218,6 @@ class Problem():
         E[:, p] = Np
         new_inv_b = E.dot(inv_B)
         return new_inv_b
-
-A = [[2, 1, 1, 0], [1, 1, 0, 1]]
-b = [3, 2]
-c = [-1, -2, 0, 0]
 
 
 input_folder = './Code/Inputs/'
