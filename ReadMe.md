@@ -1,0 +1,1 @@
+- Hay que tener en cuenta que los indices en python empiezan en 0, es decir, en el output de vb, cada uno de los elementos habría que sumarle uno.

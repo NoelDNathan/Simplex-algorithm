@@ -1,80 +1,60 @@
-import numpy as np
-
-
-def read_file(file, verbose=0):
-    with open(file, 'r') as f:
-        input = f.readlines()
-
-    size_matrix = {}
-    text = ""
-    element = ""
-    for line in input:
-        if "=" in line:
-            pos = line.find("=") - 1        
-            element = line[pos]
-
-        if 'Columns' in line:
-            size = line.split()[3]
-            size_matrix[element] = int(size)
-            continue
-
-        text += line
-
-    if verbose: print(size_matrix)
+def read_file(file):
     
-    text = text.replace('\n', ' ')
-
-    section_c = []
-    section_a = []
-    section_b = []
-
-    i = 0
-    n = len(text)
-    counter = 0
-    aux = []
-    selected_matrix = []
-    new_number = True
-    isA = False
-
-    while i < n:
-        current = text[i]
-        if current == '=':
-            selected_matrix = selected_matrix[:-1]
-            counter = 0
-            limit = size_matrix.get(text[i - 1])
-
-            previous = text[i - 1]
-            isA = False
-            
-            if previous == 'c':
-                selected_matrix = section_c
-            elif previous == 'A':
-                selected_matrix = section_a
-                isA = True
-            elif previous == 'b':
-                selected_matrix = section_b
+    # Read the file and remove '\n' and empty lines
+    with open(file) as f:
+        input = f.readlines()
+        input = [i.replace('\n', '') for i in input]
+        input = list(filter(lambda a: a != '', input))
         
-        i += 1
-        if not current.isdigit(): 
-            new_number = True
-            continue
+    # Find in which lines starts each section
+    lines = {}
+    for line, text in enumerate(input):
+        if '=' in text:
+            lines[text[:text.find('=')]] = line
 
-        if not new_number:
-            continue
+    # Separate the input in the various sections
+    sections = {}
+    prev_key = None
+    for key in lines.keys():
+        if prev_key is not None:
+            start = lines[prev_key] + 1
+            end = lines[key]
+            sections[prev_key] = input[start:end]
+        prev_key = key
+    start = lines[prev_key] + 1
+    sections[prev_key] = input[start:len(input)]
 
-        counter += 1
-        if not isA:
-            selected_matrix.append(int(current))
+    # Read each setcion
+    A = read_section(sections['A'])
+    b = read_section(sections['b'])
+    c = read_section(sections['c'])
+    # z = read_section(sections['z*'])
+    # vb = read_section(sections['vb*'])
+    
+    return A, b, c #, z, vb
+
+
+def read_section(section):
+    columns_idx = [i for i, s in enumerate(section) if 'Columns' in s]
+
+    if columns_idx:
+        columns_idx += [len(section)]
+        sections = [section[columns_idx[i]+1:columns_idx[i+1]] for i in range(len(columns_idx) - 1)]
+        
+        new_section = []
+        for i in range(len(sections[0])):
+            new_section.append(sections[0][i].split() + sections[1][i].split())
+        
+        if len(new_section) > 1:
+            section = [[float(i) for i in j] for j in new_section]
         else:
-            aux.append(int(current))
-            if counter == limit - 1:
-                selected_matrix.append(aux)
-                aux = []
-                counter = 0
-
-    if verbose:
-        print('Section A:', section_a)
-        print('Section b:', section_b)
-        print('Section c:', section_c)
-        
-    return section_a, section_b, section_c
+            section = [float(i) for i in new_section[0]]
+    
+    else:
+        if len(section) > 1:    
+            section = map(lambda x: x.split(), section)
+            section = [[float(i) for i in j] for j in section]
+        else:
+            section = section[0].split()
+            section = [float(i) for i in section]
+    return section
