@@ -96,8 +96,7 @@ class Simplex():
         cb = self.c[i_B]
         cn = self.c[i_N]
         An = self.A.take(i_N, axis=1)
-        B = self.A.take(i_B, axis=1)
-
+        
         if verbose == 2: 
             self.print(f'Base inicial: {self.__repr_list(i_B)}')
             self.print(f'Z inicial: {z} \n\n')
