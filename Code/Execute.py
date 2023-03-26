@@ -3,7 +3,7 @@ from read_file import read_file
 
 
 input_folder = './Inputs/'
-problem_name = '34.4'
+problem_name = '12.1'
 ext = '.inp'
 filename = input_folder + problem_name + ext
 

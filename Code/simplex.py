@@ -89,7 +89,7 @@ class Simplex():
         
         return i_B, i_N, x_B, z
     
-    def fase_2(self, i_B, i_N, x_B, z, verbose=0, inverse=False, fase_2 = False):
+    def fase_2(self, i_B, i_N, x_B, z, verbose=0, fase_2 = False):
         if verbose == 2: self.print(self)
 
         cb = self.c[i_B]
@@ -128,8 +128,7 @@ class Simplex():
 
             self.swap(i_B, i_N, _q, _p, verbose)
             B, An, z, cb, cn, x_B = self.actualize_variables(i_N, i_B, x_B, z, theta, db, rn, _q, _p, verbose)
-            inv_B = self.actualize_inverse_better(inv_B, db, _p) if inverse \
-                    else self.actualize_inverse(B)
+            inv_B = self.actualize_inverse(inv_B, db, _p)
 
             if verbose == 1: self.print(self._print_iter())
             iteration += 1
@@ -212,12 +211,8 @@ class Simplex():
         if verbose== 2: self.print(f'X_B: {self.__repr_list(x_B)} \nZ = {z}\n\n')
         if verbose == 3: self.print(f'B: \n{self.__repr_matrix(B)} \nAn: \n{self.__repr_matrix(An)}\n\n')
         return B, An, z, cb, cn, x_B
-
-    def actualize_inverse(self, B):
-        inv_B = np.linalg.inv(B)
-        return inv_B
     
-    def actualize_inverse_better(self, inv_B, db, p):
+    def actualize_inverse(self, inv_B, db, p):
         Np = - db / db[p]
         Np[p] = - 1 / db[p]
         E = np.eye(len(inv_B))
