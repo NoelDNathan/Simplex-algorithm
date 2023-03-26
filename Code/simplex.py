@@ -55,14 +55,14 @@ class Simplex():
     def solve(self, verbose=0):
         if verbose: self.print(' - - - - - - - - - - - - - - F A S E: 1 - - - - - - - - - - - - - - - - - - - - - \n')
         
-        i_B, i_N, x_B, z = self.fase_1(verbose)
+        i_B, i_N, x_B, z, inv_B = self.fase_1(verbose)
 
         if  z == NO_ACOTADO:
             return None
                                    
         if verbose: self.print('\n - - - - - - - - - - - - - - F A S E: 2 - - - - - - - - - - - - - - - - - - - - - \n')
         
-        i_B, i_N, x_B, z = self.fase_2(i_B, i_N, x_B, z, verbose, fase_2=True)
+        i_B, i_N, x_B, z, inv_b = self.fase_2(i_B, i_N, x_B, z, inv_B, verbose, fase_2=True)
 
         return i_B, i_N, x_B, z
     
@@ -76,8 +76,9 @@ class Simplex():
         i_N = [i for i in range(self.n)]
         x_B = self.b
         z = sum(x_B)
+        inv_B = np.identity(self.m)
 
-        i_B, i_N, x_B, z = self.fase_2(i_B, i_N, x_B, z, verbose)
+        i_B, i_N, x_B, z, inv_B = self.fase_2(i_B, i_N, x_B, z, inv_B, verbose)
         
         if round(z, 10) > 0:
             if verbose: self.print('Not Feasible Problem')
@@ -87,16 +88,15 @@ class Simplex():
         self.c = copy_c
         z = self.c[i_B].dot(x_B)
         
-        return i_B, i_N, x_B, z
+        return i_B, i_N, x_B, z, inv_B
     
-    def fase_2(self, i_B, i_N, x_B, z, verbose=0, fase_2 = False):
+    def fase_2(self, i_B, i_N, x_B, z, inv_B, verbose=0, fase_2 = False):
         if verbose == 2: self.print(self)
 
         cb = self.c[i_B]
         cn = self.c[i_N]
         An = self.A.take(i_N, axis=1)
         B = self.A.take(i_B, axis=1)
-        inv_B = np.linalg.inv(B)
 
         if verbose == 2: 
             self.print(f'Base inicial: {self.__repr_list(i_B)}')
@@ -133,7 +133,7 @@ class Simplex():
             if verbose == 1: self.print(self._print_iter())
             iteration += 1
 
-        return i_B, i_N, x_B, z
+        return i_B, i_N, x_B, z, inv_B
 
     def reduced_costs(self, cn, cb, inv_B, An, verbose=0, fase_2 = False):
         rn = cn - cb.dot(inv_B).dot(An)
