@@ -1,9 +1,8 @@
 import numpy as np
-from read_file import *
 
 NO_ACOTADO = -9999999
 
-class Problem():
+class Simplex():
     def __init__(self, A, b, c) -> None:
         self.A = np.array(A)
         self.b = np.array(b)
@@ -42,9 +41,15 @@ class Problem():
         return string
     
     def _print_iter(self) -> str:
-        string = f''
-        for key, item in self.iteration_info.items():
-            string += f'{key}: {item}  '
+        iteratation = self.iteration_info['Iteration']
+        q = self.iteration_info['q']
+        p = self.iteration_info['p']
+        theta = self.iteration_info['Theta']
+        z = self.iteration_info['z']
+        offset = 20 - len(str(theta))
+
+        string = f'Iteration {iteratation:2}: q = {q:2}, p = {p:2}, theta = {theta}, {" " * offset} z = {z}'
+
         return string
     
     def solve(self, verbose=0):
@@ -57,7 +62,7 @@ class Problem():
                                    
         if verbose: self.print('\n - - - - - - - - - - - - - - F A S E: 2 - - - - - - - - - - - - - - - - - - - - - \n')
         
-        i_B, i_N, x_B, z = self.fase_2(i_B, i_N, x_B, z, verbose)
+        i_B, i_N, x_B, z = self.fase_2(i_B, i_N, x_B, z, verbose, fase_2=True)
 
         return i_B, i_N, x_B, z
     
@@ -75,7 +80,7 @@ class Problem():
         i_B, i_N, x_B, z = self.fase_2(i_B, i_N, x_B, z, verbose)
         
         if round(z, 10) > 0:
-            if verbose: self.print('Problema no factible')
+            if verbose: self.print('Not Feasible Problem')
             return i_B, i_N, x_B, NO_ACOTADO
         
         self.A = copy_A
@@ -84,7 +89,7 @@ class Problem():
         
         return i_B, i_N, x_B, z
     
-    def fase_2(self, i_B, i_N, x_B, z, verbose=0, inverse=False):
+    def fase_2(self, i_B, i_N, x_B, z, verbose=0, inverse=False, fase_2 = False):
         if verbose == 2: self.print(self)
 
         cb = self.c[i_B]
@@ -104,18 +109,19 @@ class Problem():
 
             rn, stop = self.reduced_costs(cn, cb, inv_B, An, verbose)
             if stop: 
-                self.print('Optim solution:')
-                self.print(f'vb = {self.__repr_list(i_B)}')
-                self.print(f'xb = {self.__repr_list(x_B)}')
-                self.print(f'z = {z}')
-                self.print(f'r = {self.__repr_list(rn)}')
+                if fase_2: 
+                    self.print('\nOptim solution:')
+                    self.print(f'vb = {self.__repr_list(i_B)}')
+                    self.print(f'xb = {self.__repr_list(x_B)}')
+                    self.print(f'z = {z}')
+                    self.print(f'r = {self.__repr_list(rn)}')
                 break
 
             _q, q = self.input_variable(i_N, rn, verbose)
             db = self.calculate_db(inv_B, q, verbose)
 
             if all(db >= 0):
-                self.print('Problema no acotado')
+                self.print('Unbounded Problem')
                 break
         
             theta, _p, p = self.theta_and_p(i_B, x_B, db, verbose)
@@ -130,12 +136,12 @@ class Problem():
 
         return i_B, i_N, x_B, z
 
-    def reduced_costs(self, cn, cb, inv_B, An, verbose=0):
+    def reduced_costs(self, cn, cb, inv_B, An, verbose=0, fase_2 = False):
         rn = cn - cb.dot(inv_B).dot(An)
         if verbose == 2: self.print(f"Reduced cost: {self.__repr_list(rn)}")
 
         if all(rn >= 0):
-            if verbose: self.print("\nOptim!!!\n\n")
+            if verbose and fase_2: self.print("\nOptim!!!\n\n")
             return rn, True
         
         return rn, False
@@ -220,21 +226,6 @@ class Problem():
         return new_inv_b
 
 
-input_folder = './Code/Inputs/'
-problem_name = '34.3'
-filename = input_folder + problem_name + '.inp'
-
-A, b, c = read_file(file=filename)
-
-P = Problem(A, b, c)
-P.solve(verbose=1)
-
-
-output_folder = './Code/Outputs/'
-filename = output_folder + problem_name + '.out'
-
-file = open(filename, "w")
-file.write(P.output)
 
 
 
