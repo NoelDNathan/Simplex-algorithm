@@ -52,21 +52,21 @@ class Simplex():
 
         return string
     
-    def solve(self, verbose=0):
+    def solve(self, verbose=0, inverse=False):
         if verbose: self.print(' - - - - - - - - - - - - - - F A S E: 1 - - - - - - - - - - - - - - - - - - - - - \n')
         
-        i_B, i_N, x_B, z = self.fase_1(verbose)
+        i_B, i_N, x_B, z = self.fase_1(verbose, inverse)
 
         if  z == NO_ACOTADO:
             return None
                                    
         if verbose: self.print('\n - - - - - - - - - - - - - - F A S E: 2 - - - - - - - - - - - - - - - - - - - - - \n')
         
-        i_B, i_N, x_B, z = self.fase_2(i_B, i_N, x_B, z, verbose, fase_2=True)
+        i_B, i_N, x_B, z = self.fase_2(i_B, i_N, x_B, z, verbose, inverse, fase_2=True)
 
         return i_B, i_N, x_B, z
     
-    def fase_1(self, verbose=0):
+    def fase_1(self, verbose=0, inverse=False):
         copy_A = self.A.copy()
         copy_c = self.c.copy()
 
@@ -77,7 +77,7 @@ class Simplex():
         x_B = self.b
         z = sum(x_B)
 
-        i_B, i_N, x_B, z = self.fase_2(i_B, i_N, x_B, z, verbose)
+        i_B, i_N, x_B, z = self.fase_2(i_B, i_N, x_B, z, verbose, inverse)
         
         if round(z, 10) > 0:
             if verbose: self.print('Not Feasible Problem')
@@ -129,7 +129,7 @@ class Simplex():
             self.swap(i_B, i_N, _q, _p, verbose)
             B, An, z, cb, cn, x_B = self.actualize_variables(i_N, i_B, x_B, z, theta, db, rn, _q, _p, verbose)
             inv_B = self.actualize_inverse_better(inv_B, db, _p) if inverse \
-                    else self.actualize_inverse(B)
+                    else self.actualize_inverse(B) 
 
             if verbose == 1: self.print(self._print_iter())
             iteration += 1
@@ -224,8 +224,3 @@ class Simplex():
         E[:, p] = Np
         new_inv_b = E.dot(inv_B)
         return new_inv_b
-
-
-
-
-
